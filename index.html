@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Snake Game</h1>
+        <div class="game-container">
+            <div class="game-header">
+                <div class="score-container">
+                    <span>Score: <span id="current-score">0</span></span>
+                </div>
+                <div class="score-container">
+                    <span>High Score: <span id="high-score">0</span></span>
+                </div>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+            <div id="gameOverScreen" class="overlay" style="display: none;">
+                <div class="message-box">
+                    <h2>Game Over!</h2>
+                    <p>Your score: <span id="final-score">0</span></p>
+                    <button id="restart-button">Restart</button>
+                </div>
+            </div>
+            <div id="pauseScreen" class="overlay" style="display: none;">
+                 <div class="message-box">
+                    <h2>Paused</h2>
+                </div>
+            </div>
+        </div>
+        <div class="controls">
+            <p>Use Arrow keys or WASD to move.</p>
+            <p>Space to Pause/Resume. 'R' to Restart.</p>
+        </div>
+        <div class="mobile-controls" id="mobile-controls">
+            <button id="up-btn">↑</button>
+            <div>
+                <button id="left-btn">←</button>
+                <button id="down-btn">↓</button>
+                <button id="right-btn">→</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

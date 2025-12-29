@@ -20,43 +20,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridSize = 20;
     let snake, apple, direction, score, highScore, gameSpeed, gameLoop, paused;
 
-    // Scale canvas
+    // Scale canvas and redraw
     function scaleCanvas() {
         const containerWidth = canvas.parentElement.clientWidth;
-        canvas.width = canvas.height = Math.floor(containerWidth / gridSize) * gridSize;
+        const newSize = Math.floor(containerWidth / gridSize) * gridSize;
+        
+        if (canvas.width !== newSize) {
+            canvas.width = canvas.height = newSize;
+            draw(); // Redraw game elements on new canvas size
+        }
     }
 
     function init() {
-        // Initial snake position and parts
-        snake = [
-            { x: gridSize * 10, y: gridSize * 10 },
-            { x: gridSize * 9, y: gridSize * 10 },
-            { x: gridSize * 8, y: gridSize * 10 }
-        ];
-
-        // Initial direction
-        direction = { x: 1, y: 0 };
+        // Ensure canvas is sized before starting the game
+        scaleCanvas();
         
-        // Score and speed
-        score = 0;
-        gameSpeed = 150; // Milliseconds per frame
-        paused = false;
+        // Use a timeout to ensure the browser has rendered the layout
+        setTimeout(() => {
+            // Initial snake position and parts
+            snake = [
+                { x: gridSize * 10, y: gridSize * 10 },
+                { x: gridSize * 9, y: gridSize * 10 },
+                { x: gridSize * 8, y: gridSize * 10 }
+            ];
 
-        // Load high score from localStorage
-        highScore = localStorage.getItem('snakeHighScore') || 0;
-        highScoreEl.textContent = highScore;
-        currentScoreEl.textContent = 0;
+            // Initial direction
+            direction = { x: 1, y: 0 };
+            
+            // Score and speed
+            score = 0;
+            gameSpeed = 150; // Milliseconds per frame
+            paused = false;
 
-        // Hide overlays
-        gameOverScreen.style.display = 'none';
-        pauseScreen.style.display = 'none';
+            // Load high score from localStorage
+            highScore = localStorage.getItem('snakeHighScore') || 0;
+            highScoreEl.textContent = highScore;
+            currentScoreEl.textContent = 0;
 
-        // Place the first apple
-        placeApple();
+            // Hide overlays
+            gameOverScreen.style.display = 'none';
+            pauseScreen.style.display = 'none';
 
-        // Start the game loop
-        if (gameLoop) clearInterval(gameLoop);
-        gameLoop = setInterval(update, gameSpeed);
+            // Place the first apple
+            placeApple();
+
+            // Start the game loop
+            if (gameLoop) clearInterval(gameLoop);
+            gameLoop = setInterval(update, gameSpeed);
+        }, 0);
     }
 
     function update() {
@@ -92,6 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function draw() {
+        if (!snake) return; // Don't draw if game hasn't been initialized
+
         // Clear canvas
         ctx.fillStyle = '#f9f9f9';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -106,12 +119,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Draw apple
-        ctx.fillStyle = '#E74C3C';
-        ctx.fillRect(apple.x, apple.y, gridSize, gridSize);
+        if (apple) {
+            ctx.fillStyle = '#E74C3C';
+            ctx.fillRect(apple.x, apple.y, gridSize, gridSize);
+        }
     }
     
     function placeApple() {
         let appleX, appleY;
+        // Ensure canvas has a size before placing the apple
+        if (canvas.width === 0 || canvas.height === 0) {
+            setTimeout(placeApple, 50); // Retry after a short delay
+            return;
+        }
         do {
             appleX = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
             appleY = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
@@ -139,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function changeDirection(newDirection) {
+        if (paused) return;
         // Prevent reversing
         if (snake.length > 1 && newDirection.x === -direction.x && newDirection.y === -direction.y) {
             return;
@@ -150,6 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
         paused = !paused;
         pauseScreen.style.display = paused ? 'flex' : 'none';
     }
+
+
 
     function endGame() {
         clearInterval(gameLoop);
@@ -164,6 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Event Listeners
     window.addEventListener('keydown', e => {
+        // Prevent browser scrolling
+        if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+        }
+
         switch (e.key) {
             case 'ArrowUp':
             case 'w':
@@ -199,9 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
     leftBtn.addEventListener('click', () => { if (direction.x === 0) changeDirection({ x: -1, y: 0 }); });
     rightBtn.addEventListener('click', () => { if (direction.x === 0) changeDirection({ x: 1, y: 0 }); });
 
-    window.addEventListener('resize', scaleCanvas);
+    window.addEventListener('resize', init); // Re-initialize on resize to handle everything correctly
 
     // Initial setup
-    scaleCanvas();
     init();
 });
